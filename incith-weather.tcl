@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------#
-# incith:weather                                                 v2.9d#
+# incith:weather                                                 v2.9e#
 #                                                                     #
 # retrieves weather and forecast data from www.wunderground.com       #
 # tested on Eggdrop v1.6.18                                           #
@@ -86,6 +86,7 @@
 #  2.9b: Corrected cruft within updated time.                         #
 #  2.9c: Corrected multiple results.                                  #
 #  2.9d: Initial Refixed Version - There will be problems.            #
+#  2.9e: Rollup Community fixes (use tls, switch to https)            #
 #                                                                     #
 # Contact:                                                            #
 #   E-mail (incith@gmail.com) cleanups, ideas, bugs, etc., to me.     #
@@ -117,6 +118,8 @@
 # irc.freenode.net / #incith                                          #
 #---------------------------------------------------------------------#
 package require http 2.3
+# simboy1234: ensure we require tls (http://forum.egghelp.org/viewtopic.php?p=104862#104862)
+package require tls
 setudef flag weather
 
 namespace eval incith {
@@ -209,7 +212,7 @@ namespace eval incith {
 # script begings
 namespace eval incith {
   namespace eval weather {
-    variable version "incith:weather-2.9c"
+    variable version "incith:weather-2.9e"
     variable debug 0
   }
 }
@@ -503,7 +506,7 @@ namespace eval incith {
 
       # no input given
       if {[regexp -- "^\\s*$" $input]} {
-        send_output $where "Please visit http://classic.wunderground.com for more details on searching methods."
+        send_output $where "Please visit http://www.wunderground.com for more details on searching methods."
         return
       }
 
@@ -582,7 +585,7 @@ namespace eval incith {
 
       # no input given
       if {[regexp -- "^\\s*$" $input]} {
-        send_output $where "Please visit http://classic.wunderground.com for more details on searching methods."
+        send_output $where "Please visit http://www.wunderground.com for more details on searching methods."
         return
       }
 
@@ -661,7 +664,7 @@ namespace eval incith {
 
       # no input given
       if {[regexp -- "^\\s*$" $input]} {
-        send_output $where "Please visit http://classic.wunderground.com for more details on searching methods."
+        send_output $where "Please visit http://www.wunderground.com for more details on searching methods."
         return
       }
 
@@ -740,7 +743,7 @@ namespace eval incith {
 
       # no input given
       if {[regexp -- "^\\s*$" $input]} {
-        send_output $where "Please visit http://classic.wunderground.com for more details on searching methods."
+        send_output $where "Please visit http://www.wunderground.com for more details on searching methods."
         return
       }
 
@@ -794,8 +797,8 @@ namespace eval incith {
 
 
     # [fetch_html] : fetches and returns a list of usable data
-    #
-    proc fetch_html {query {query_url "http://classic.wunderground.com/cgi-bin/findweather/getForecast?query="} {no_format 0}} {
+    # shadrach: Switch to using https: (http://forum.egghelp.org/viewtopic.php?p=104772#104772)
+    proc fetch_html {query {query_url "https://www.wunderground.com/cgi-bin/findweather/getForecast?query="} {no_format 0}} {
       set multiple_results 0
       # store the website we are retrieving
       set output(query) $query
@@ -810,6 +813,8 @@ namespace eval incith {
       }
       # the "browser" we are using
       set ua "Lynx/2.8.5rel.1 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.7e"
+      # creasy: user agent SSL fix (http://forum.egghelp.org/viewtopic.php?p=104781#104781)
+      ::http::register https 443 [list ::tls::socket -request 1 -require 0 -ssl3 1 -tls1 1]
       if {[info exists proxy_info] == 1} {
         set http [::http::config -useragent $ua -proxyhost [lindex $proxy_info 0] -proxyport [lindex $proxy_info 1]]
       } else {
@@ -895,7 +900,7 @@ namespace eval incith {
         # if after filtering we only have 1 result, use it
         if {[llength [set lr [lsort -unique -increasing $lr]]] == 1} {
           unset output
-          array set output [fetch_html "[lindex $lu 0]" "http://classic.wunderground.com" 1]
+          array set output [fetch_html "[lindex $lu 0]" "http://www.wunderground.com" 1]
         } else {
           if {[llength $lr] <= $::incith::weather::multiple_result} {
              set output(error) "Multiple Results Found: [join $lr "; "]"
