@@ -95,6 +95,7 @@ ChangeLog:
  - 2.9c: Corrected multiple results.                            
  - 2.9d: Initial Refixed Version - There will be problems.            
  - 2.9e: Rollup of community fixes (use tls, switch to https)
+      - You will need to install the TLS TCl modules: tcl-tls (Ubuntu) or tcltls-devel package (thanks mtnvortest) 
  
 
 Contact:
